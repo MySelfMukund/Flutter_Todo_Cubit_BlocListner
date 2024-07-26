@@ -1,68 +1,36 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/todo_model.dart';
-import '../todo_filter/todo_filter_cubit.dart';
-import '../todo_list/todo_list_cubit.dart';
-import '../todo_search/todo_search_cubit.dart';
-
 part 'filtered_todo_state.dart';
 
 class FilteredTodoCubit extends Cubit<FilteredTodoState> {
-  late StreamSubscription todoFilterSubscription;
-  late StreamSubscription todoSearchSubscription;
-  late StreamSubscription todoListSubscription;
-
   final initialTodos;
 
-  final TodoFilterCubit todoFilterCubit;
-  final TodoSearchCubit todoSearchCubit;
-  final TodoListCubit todoListCubit;
   FilteredTodoCubit({
     required this.initialTodos,
-    required this.todoFilterCubit,
-    required this.todoSearchCubit,
-    required this.todoListCubit,
-  }) : super(FilteredTodoState(filteredTodo: initialTodos)) {
-    todoFilterSubscription = todoFilterCubit.stream.listen((TodoFilterState todoFilterState) => setFilterTodos());
+  }) : super(FilteredTodoState(filteredTodo: initialTodos));
 
-    todoSearchSubscription = todoSearchCubit.stream.listen((TodoSearchState todoSearchState) => setFilterTodos());
-
-    todoListSubscription = todoListCubit.stream.listen((TodoListState todoListState) => setFilterTodos());
-  }
-
-  void setFilterTodos() {
+  void setFilterTodos({required filter, required List<Todo> todos, required String searchText}) {
     List<Todo> _filterTodos;
 
-    switch (todoFilterCubit.state.filter) {
+    switch (filter) {
       case Filter.active:
-        _filterTodos = todoListCubit.state.todos.where((Todo todo) => !todo.isCompleted).toList();
+        _filterTodos = todos.where((Todo todo) => !todo.isCompleted).toList();
         break;
       case Filter.completed:
-        _filterTodos = todoListCubit.state.todos.where((Todo todo) => todo.isCompleted).toList();
+        _filterTodos = todos.where((Todo todo) => todo.isCompleted).toList();
         break;
       case Filter.all:
       default:
-        _filterTodos = todoListCubit.state.todos;
+        _filterTodos = todos;
         break;
     }
-    if (todoSearchCubit.state.searchText.isNotEmpty) {
-      _filterTodos = _filterTodos
-          .where((Todo todo) => todo.desc.toLowerCase().contains(todoSearchCubit.state.searchText.toLowerCase()))
-          .toList();
+    if (searchText.isNotEmpty) {
+      _filterTodos = _filterTodos.where((Todo todo) => todo.desc.toLowerCase().contains(searchText.toLowerCase())).toList();
     }
     emit(state.copyWith(filteredTodo: _filterTodos));
-  }
-
-  @override
-  Future<void> close() {
-    todoFilterSubscription.cancel();
-    todoSearchSubscription.cancel();
-    todoListSubscription.cancel();
-
-    return super.close();
   }
 }
