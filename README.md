@@ -1,6 +1,6 @@
 # Flutter Todo App (Bloc + BlocListener)
 
-A Todo app built using Flutter, implementing the **Bloc Pattern** with **StreamSubscription** for efficient state management and real-time task updates.
+A Todo app built using Flutter, implementing the **Bloc Pattern** with **BlocListener** for efficient state management and real-time task updates.
 
 ## Features
 
